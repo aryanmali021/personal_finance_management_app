@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Personal Finance Manager</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <div class="logo-icon">💰</div>
+                <div class="logo-text">
+                    <h2>Finance</h2>
+                    <p>Personal Finance Manager</p>
+                </div>
+            </div>
+            
+                <!-- Simplified Nav Menu -->
+                <a href="#" class="nav-item active" data-target="view-dashboard">
+                    <i class="fas fa-columns"></i> Dashboard
+                </a>
+                <a href="#" class="nav-item" data-target="view-expenses">
+                    <i class="fas fa-wallet"></i> Expenses
+                </a>
+                <a href="#" class="nav-item" data-target="view-budget">
+                    <i class="fas fa-piggy-bank"></i> Budget
+                </a>
+                <a href="#" class="nav-item" data-target="view-goals">
+                    <i class="fas fa-bullseye"></i> Goals
+                </a>
+                <a href="#" class="nav-item" data-target="view-savings">
+                    <i class="fas fa-piggy-bank"></i> Savings
+                </a>
+                <a href="#" class="nav-item" data-target="view-investments">
+                    <i class="fas fa-chart-line"></i> Investments
+                </a>
+                <a href="#" class="nav-item" data-target="view-reports">
+                    <i class="fas fa-file-alt"></i> Reports
+                </a>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <!-- Placeholder if needed -->
+                </div>
+                <div class="header-right" style="display: flex; gap: 20px; align-items: center;">
+                    
+                    <!-- Notification Bell -->
+                    <div class="notification-wrapper" style="position: relative; cursor: pointer;" onclick="toggleNotifications()">
+                        <div style="font-size: 1.2rem; color: white; position: relative;">
+                            <i class="fas fa-bell"></i>
+                            <span id="notif-badge" style="position: absolute; top: -5px; right: -8px; background: var(--icon-red); color: white; border-radius: 50%; padding: 2px 5px; font-size: 0.6rem; font-weight: bold; min-width: 15px; text-align: center; display: none;">0</span>
+                        </div>
+                        
+                        <!-- Notification Dropdown -->
+                        <div id="notif-dropdown" style="display: none; position: absolute; right: 0; top: 100%; margin-top: 15px; background: white; width: 320px; border-radius: 8px; box-shadow: 0 10px 30px rgba(0,0,0,0.15); z-index: 1000; overflow: hidden;">
+                            <div style="padding: 15px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: 600; color: var(--text-main); font-size: 0.95rem;">
+                                Alerts & Notifications
+                            </div>
+                            <div id="notif-list" style="max-height: 350px; overflow-y: auto;">
+                                <!-- List goes here -->
+                                <div style="padding: 15px; text-align: center; color: var(--text-muted); font-size: 0.9rem;">
+                                    No new notifications
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <button class="btn btn-outline" onclick="openProfileModal()"><i class="fas fa-user"></i> Profile</button>
+                    <a href="{{ url_for('logout') }}" class="btn btn-primary" style="text-decoration: none;">Sign Out</a>
+                </div>
+            </header>
+
+            <!-- DASHBOARD VIEW -->
+            <div id="view-dashboard" class="view-section">
+                <!-- Dashboard Area -->
+                <div class="dashboard-header">
+                    <h1>Dashboard</h1>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary" onclick="openIncomeModal()"><i class="fas fa-plus"></i> Add Income</button>
+                        <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fas fa-plus"></i> Add Expense</button>
+                    </div>
+                </div>
+
+                <!-- Over Budget Alert Banner -->
+                <div id="over-budget-alert" class="card bg-red mb-3" style="display: none; padding: 15px; flex-direction: row; align-items: center; justify-content: start; gap: 15px; color: white;">
+                    <i class="fas fa-exclamation-triangle" style="font-size: 1.5rem;"></i>
+                    <div>
+                        <h3 style="margin-bottom: 5px; color: white;">Budget Exceeded!</h3>
+                        <p style="margin: 0; opacity: 0.9;" id="over-budget-text">You have exceeded your monthly budget.</p>
+                    </div>
+                </div>
+
+                <!-- Summary Cards -->
+                <div class="summary-cards">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Total Expenses</h3>
+                            <div class="icon bg-red"><i class="fas fa-credit-card"></i></div>
+                        </div>
+                        <div class="card-value" id="val-expenses">₹0</div>
+                        <div class="card-subtitle">All Time</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Budget Limit</h3>
+                            <div class="icon bg-orange"><i class="fas fa-briefcase"></i></div>
+                        </div>
+                        <div class="card-value" id="val-budget">₹0</div>
+                        <div class="card-subtitle">Set Budgets</div>
+                    </div>
+                </div>
+
+                <!-- Recent Expenses Section -->
+                <section class="section">
+                    <div class="section-header">
+                        <h2>Recent Expenses</h2>
+                        <button class="btn btn-primary btn-sm" onclick="switchTab('view-expenses')">View All</button>
+                    </div>
+                    <div class="card full-width p-0">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Category</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recent-expenses-body">
+                                <!-- Recent expenses dynamic content -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <!-- EXPENSES VIEW -->
+            <div id="view-expenses" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>All Expenses</h1>
+                    <div class="dashboard-actions" style="display: flex; gap: 10px;">
+                        <button class="btn btn-primary" onclick="openIncomeModal()"><i class="fas fa-plus"></i> Add Income</button>
+                        <button class="btn btn-primary" onclick="openExpenseModal()"><i class="fas fa-plus"></i> Add Expense</button>
+                        <button class="btn bg-red" style="color: white; border: none; padding: 0.8rem 1.5rem; border-radius: var(--border-radius); cursor: pointer; font-weight: 600; transition: all 0.3s ease;" onclick="resetAllExpenses()"><i class="fas fa-trash-alt"></i> Reset All</button>
+                    </div>
+                </div>
+                <div class="card full-width p-0">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody id="all-expenses-body">
+                            <!-- All expenses will be populated by JS later, for now we mirror recent -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- BUDGET VIEW -->
+            <div id="view-budget" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>Budget Management</h1>
+                </div>
+                <div class="card">
+                    <h3>Current Monthly Budget: <span id="budget-view-val" class="text-pink">₹0</span></h3>
+                    <h3>Monthly Savings Goal: <span id="budget-savings-val" class="text-green">₹0</span></h3>
+                    <p class="text-muted mt-3 mb-3">Set your target monthly spending limit and savings goal below.</p>
+                    
+                    <form id="budgetForm" class="mt-3">
+                        <div class="form-group" style="max-width: 300px;">
+                            <label for="newBudget">New Budget Limit (₹)</label>
+                            <input type="number" id="newBudget" required placeholder="Enter budget limit">
+                        </div>
+                        <div class="form-group" style="max-width: 300px;">
+                            <label for="newSavingsGoal">New Savings Goal (₹)</label>
+                            <input type="number" id="newSavingsGoal" required placeholder="Enter savings target">
+                        </div>
+                        <button type="submit" class="btn btn-primary">Update Budget Info</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- REPORTS VIEW -->
+            <div id="view-reports" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>Comprehensive Financial Report</h1>
+                    <button class="btn btn-outline" id="btn-export-csv" onclick="exportToCSV()">
+                        <i class="fas fa-file-export"></i> Export CSV
+                    </button>
+                </div>
+                
+                <!-- Macro Summary Cards -->
+                <div class="summary-cards" style="grid-template-columns: repeat(4, 1fr); gap: 15px; margin-bottom: 30px;">
+                    <div class="card" style="padding: 15px;">
+                        <div class="card-header" style="margin-bottom: 5px;">
+                            <h3 style="font-size: 0.85rem;">Total Income</h3>
+                            <div class="icon bg-blue" style="width: 25px; height: 25px; font-size: 0.8rem;"><i class="fas fa-arrow-down"></i></div>
+                        </div>
+                        <div class="card-value" id="report-val-income" style="font-size: 1.4rem;">₹0</div>
+                    </div>
+                    <div class="card" style="padding: 15px;">
+                        <div class="card-header" style="margin-bottom: 5px;">
+                            <h3 style="font-size: 0.85rem;">Total Expenses</h3>
+                            <div class="icon bg-red" style="width: 25px; height: 25px; font-size: 0.8rem;"><i class="fas fa-arrow-up"></i></div>
+                        </div>
+                        <div class="card-value" id="report-val-expenses" style="font-size: 1.4rem;">₹0</div>
+                    </div>
+                    <div class="card" style="padding: 15px;">
+                        <div class="card-header" style="margin-bottom: 5px;">
+                            <h3 style="font-size: 0.85rem;">Current Savings</h3>
+                            <div class="icon bg-green" style="width: 25px; height: 25px; font-size: 0.8rem;"><i class="fas fa-piggy-bank"></i></div>
+                        </div>
+                        <div class="card-value" id="report-val-savings" style="font-size: 1.4rem;">₹0</div>
+                    </div>
+                    <div class="card" style="padding: 15px;">
+                        <div class="card-header" style="margin-bottom: 5px;">
+                            <h3 style="font-size: 0.85rem;">Investments</h3>
+                            <div class="icon bg-orange" style="width: 25px; height: 25px; font-size: 0.8rem;"><i class="fas fa-chart-line"></i></div>
+                        </div>
+                        <div class="card-value" id="report-val-investments" style="font-size: 1.4rem;">₹0</div>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Spending Analysis</h2>
+                </div>
+
+                <div class="card mb-4" style="padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 300px;">
+                    <div style="width: 100%; max-width: 400px; height: 300px;">
+                        <canvas id="spendingChart"></canvas>
+                    </div>
+                </div>
+
+                <div class="section-header">
+                    <h2>Category Spending Breakdown</h2>
+                </div>
+                <div class="card full-width p-0">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Total Spent</th>
+                                <th>% of Total Expenses</th>
+                            </tr>
+                        </thead>
+                        <tbody id="report-expenses-body">
+                            <!-- Report expenses dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- GOALS VIEW -->
+            <div id="view-goals" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>Goals</h1>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary" onclick="openAddGoalModal()"><i class="fas fa-plus"></i> Add Goal</button>
+                    </div>
+                </div>
+                <div id="goals-container">
+                    <!-- Goals will be populated here -->
+                </div>
+            </div>
+
+            <!-- SAVINGS VIEW -->
+            <div id="view-savings" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>Monthly Savings</h1>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary" onclick="openSavingsModal()"><i class="fas fa-plus"></i> Add Savings</button>
+                    </div>
+                </div>
+                <div class="summary-cards" style="grid-template-columns: 1fr;">
+                    <div class="card" id="savings-status-card">
+                        <div class="card-header">
+                            <h3>Current Saved Amount</h3>
+                            <div class="icon bg-green"><i class="fas fa-piggy-bank"></i></div>
+                        </div>
+                        <div class="card-value" id="val-savings">₹0</div>
+                        <div class="card-subtitle" id="val-savings-goal">Target: ₹0</div>
+                        <div class="mt-3" id="savings-alert"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- INVESTMENTS VIEW -->
+            <div id="view-investments" class="view-section" style="display: none;">
+                <div class="dashboard-header">
+                    <h1>Investments</h1>
+                    <div class="dashboard-actions">
+                        <button class="btn btn-primary" onclick="openAddInvestmentModal()"><i class="fas fa-plus"></i> Add Investment</button>
+                    </div>
+                </div>
+                <div class="card full-width p-0">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Investment Name</th>
+                                <th>Amount Invested</th>
+                            </tr>
+                        </thead>
+                        <tbody id="investments-body">
+                            <!-- Investments dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+
+
+        </main>
+    </div>
+
+    <!-- Add Income Modal (Hidden by default) -->
+    <div id="incomeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeIncomeModal()">&times;</span>
+            <h2>Add New Income</h2>
+            <form id="incomeForm">
+                <div class="form-group">
+                    <label for="incAmount">Amount (₹)</label>
+                    <input type="number" id="incAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="incSource">Income Source</label>
+                    <select id="incSource">
+                        <option value="Salary">Salary</option>
+                        <option value="Business">Business</option>
+                        <option value="Investments">Investments</option>
+                        <option value="Rental">Rental</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Income</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Savings Modal -->
+    <div id="savingsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeSavingsModal()">&times;</span>
+            <h2>Add to Savings</h2>
+            <form id="savingsForm">
+                <div class="form-group">
+                    <label for="savAmount">Amount to add (₹)</label>
+                    <input type="number" id="savAmount" required min="1">
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal (Hidden by default) -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeExpenseModal()">&times;</span>
+            <h2>Add New Expense</h2>
+            <form id="expenseForm">
+                <div class="form-group">
+                    <label for="expAmount">Amount (₹)</label>
+                    <input type="number" id="expAmount" required>
+                </div>
+                <div class="form-group">
+                    <label for="expCategory">Category</label>
+                    <select id="expCategory">
+                        <option value="Food">Food</option>
+                        <option value="Travel">Travel</option>
+                        <option value="Bills">Bills</option>
+                        <option value="Shopping">Shopping</option>
+                        <option value="College">College</option>
+                        <option value="Groceries">Groceries</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Expense</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Goal Modal -->
+    <div id="addGoalModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddGoalModal()">&times;</span>
+            <h2>Add New Goal</h2>
+            <form id="addGoalForm">
+                <div class="form-group">
+                    <label for="goalName">Goal Name</label>
+                    <input type="text" id="goalName" required>
+                </div>
+                <div class="form-group">
+                    <label for="goalTarget">Target Amount (₹)</label>
+                    <input type="number" id="goalTarget" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Goal</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Progress Modal -->
+    <div id="addProgressModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddProgressModal()">&times;</span>
+            <h2>Add Funds to Goal</h2>
+            <form id="addProgressForm">
+                <input type="hidden" id="progressGoalId">
+                <div class="form-group">
+                    <label for="progressAmount">Amount to Add (₹)</label>
+                    <input type="number" id="progressAmount" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Add Funds</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Investment Modal -->
+    <div id="addInvestmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeAddInvestmentModal()">&times;</span>
+            <h2>Add New Investment</h2>
+            <form id="addInvestmentForm">
+                <div class="form-group">
+                    <label for="invName">Investment Name</label>
+                    <input type="text" id="invName" required placeholder="e.g., Gold, Stocks, Mutual Funds">
+                </div>
+                <div class="form-group">
+                    <label for="invAmount">Amount Invested (₹)</label>
+                    <input type="number" id="invAmount" required>
+                </div>
+                <button type="submit" class="btn btn-primary mt-3">Save Investment</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- AI Floating Advisor Panel -->
+    <div id="ai-advisor-panel" class="ai-panel">
+        <div class="ai-panel-header">
+            <h3><i class="fas fa-robot"></i> AI Financial Advisor</h3>
+            <button class="close-panel" onclick="toggleAIPanel()">&times;</button>
+        </div>
+        <div class="ai-panel-body" id="advisor-content">
+            <div class="text-center text-muted" style="margin-top: 30px;">
+                <p>Click below to generate personalized advice based on your data.</p>
+            </div>
+        </div>
+        <div class="ai-panel-footer">
+            <button class="btn btn-primary" id="btn-generate-advice" onclick="generateAdvice()" style="width: 100%;">
+                <i class="fas fa-magic"></i> Generate Advice
+            </button>
+        </div>
+    </div>
+
+    <!-- AI Floating Action Button -->
+    <button class="ai-fab" onclick="toggleAIPanel()" title="Ask AI Advisor">
+        <i class="fas fa-robot"></i>
+    </button>
+
+    <!-- User Profile Modal -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content" style="max-width: 400px; text-align: center;">
+            <span class="close" onclick="closeProfileModal()">&times;</span>
+            <div style="font-size: 3rem; color: var(--primary); margin-bottom: 15px;">
+                <i class="fas fa-user-circle"></i>
+            </div>
+            <h2 style="margin-top: 0; margin-bottom: 25px;">User Profile</h2>
+            
+            <div style="text-align: left; background: var(--background); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+                <div style="margin-bottom: 12px;"><strong>Full Name:</strong> <span id="profileFullName" style="color: var(--text-muted); float: right;"></span></div>
+                <div style="margin-bottom: 12px;"><strong>Username:</strong> <span id="profileUsername" style="color: var(--text-muted); float: right;"></span></div>
+                <div style="margin-bottom: 12px;"><strong>Email:</strong> <span id="profileEmail" style="color: var(--text-muted); float: right;"></span></div>
+                <div><strong>Mobile:</strong> <span id="profileMobile" style="color: var(--text-muted); float: right;"></span></div>
+            </div>
+            
+            <button class="btn btn-primary" style="width: 100%;" onclick="closeProfileModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

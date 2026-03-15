@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Personal Finance App</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C5CE7;
+            --secondary: #A29BFE;
+            --background: #F8F9FA;
+            --surface: #FFFFFF;
+            --text-main: #2D3436;
+            --text-muted: #636E72;
+            --icon-red: #FF7675;
+            --icon-blue: #74B9FF;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--background);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .login-card {
+            background: var(--surface);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(108, 92, 231, 0.1);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .login-card h2 {
+            margin-top: 0;
+            margin-bottom: 25px;
+            color: var(--text-main);
+            font-size: 1.8rem;
+        }
+
+        .login-icon {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 20px;
+            background: rgba(108, 92, 231, 0.1);
+            width: 80px;
+            height: 80px;
+            line-height: 80px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--text-main);
+            font-weight: 500;
+            font-size: 0.95rem;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #EEE;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-sizing: border-box;
+            background-color: var(--background);
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: white;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.1);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            padding: 14px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: #5A4BDE;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(108, 92, 231, 0.3);
+        }
+
+        .error-message {
+            color: var(--icon-red);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            font-weight: 500;
+        }
+
+        .hint {
+            margin-top: 25px;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-icon">
+            <i class="fas fa-user-plus"></i>
+        </div>
+        <h2>Create Account</h2>
+        
+        {% if error %}
+        <div class="error-message"><i class="fas fa-exclamation-circle"></i> {{ error }}</div>
+        {% endif %}
+        
+        <form action="{{ url_for('register') }}" method="POST">
+            <div class="form-group">
+                <label for="full_name">Full Name</label>
+                <input type="text" id="full_name" name="full_name" required placeholder="John Doe">
+            </div>
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="name@example.com">
+            </div>
+            <div class="form-group">
+                <label for="mobile">Mobile Number</label>
+                <input type="tel" id="mobile" name="mobile" required placeholder="e.g. 9876543210">
+            </div>
+            <div class="form-group">
+                <label for="username">Choose Username</label>
+                <input type="text" id="username" name="username" required placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label for="password">Choose Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter password">
+            </div>
+            <div class="form-group">
+                <label for="confirm_password">Confirm Password</label>
+                <input type="password" id="confirm_password" name="confirm_password" required placeholder="Re-enter password">
+            </div>
+            <button type="submit" class="btn-primary">Register</button>
+        </form>
+        
+        <div class="hint">
+            Already have an account? <a href="{{ url_for('login') }}" style="color: var(--primary); text-decoration: none; font-weight: 600;">Sign in here</a>
+        </div>
+    </div>
+</body>
+</html>
