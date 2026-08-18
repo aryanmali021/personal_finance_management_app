@@ -1,5 +1,6 @@
 # Personal Finance Management App
-
+# ARYAN MALI
+### aryanmali021
 A command-line based personal finance manager written in Python. It helps you track your income, expenses, budget, and overall savings using a local SQLite database for storage.
 
 ## Requirements
